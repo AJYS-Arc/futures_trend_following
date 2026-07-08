@@ -1,5 +1,10 @@
 # Futures Trend-Following Strategy Comparison
 
+> Build, backtest, and compare **sector-neutral** vs **absolute** trend-following
+> strategies across a diversified universe of CME futures, using Databento market data.
+
+**Status:** In development - See the [Project Roadmap](#project-roadmap) for open work items.
+
 ---
 
 ## Project Group
@@ -11,157 +16,123 @@
 
 ## Project Objective
 
-The objective of this project is to **build, backtest, and compare** systematic trend-following strategies across a diversified universe of **CME futures markets using Databento market data**. The project will include futures contracts across multiple sectors, such as **equity indices, interest rates, currencies, energy, metals, and agriculture**, subject to availability under the course's Databento CME data license.
+The objective of this project is to **build, backtest, and compare** systematic trend-following strategies across a diversified universe of **CME futures markets using Databento market data**, spanning equity indices, interest rates, currencies, energy, metals, and agriculture.
 
-We will compare two different portfolio construction approaches:
+We compare two portfolio construction approaches:
 
-1. **Sector-neutral trend-following:** Futures contracts are ranked by trend strength within each sector. The strategy goes long the contracts with the strongest trend scores and short the contracts with the weakest trend scores, while keeping sector exposures balanced.
+1. **Sector-neutral trend-following:** rank contracts by trend strength within each sector; go long the strongest and short the weakest while keeping sector exposures balanced.
+2. **Absolute trend-following:** evaluate each contract independently; go long positive-trend contracts and short negative-trend contracts, letting sector exposures vary.
 
-2. **Absolute trend-following:** Each futures contract is evaluated independently. The strategy goes long contracts with positive trend signals and short contracts with negative trend signals, allowing sector exposures to vary depending on where trends appear in the market.
-
-The main research question is whether **sector-neutral relative trend-following** or **absolute trend-following** produces stronger portfolio-level performance after accounting for risk, volatility, drawdowns, and trading activity.
-
-The final analysis will compare the strategies using performance and risk metrics such as **cumulative return, annualized return, annualized volatility, Sharpe ratio, maximum drawdown, turnover, and sector exposure**.
-
----
-## Project Description
-
-This project will develop a Python-based backtesting framework for comparing two futures trend-following strategies. The analysis will use historical futures price data to calculate trend signals, construct portfolios, and evaluate strategy performance over time.
-
-The project is designed to answer a practical portfolio construction question: whether trend-following works better when signals are applied within each sector in a balanced way, or when each market is traded independently based on its own absolute trend.
+The research question is whether sector-neutral relative trend-following or absolute trend-following produces stronger risk-adjusted portfolio performance.
 
 ---
 
-## Data
+## Repository Structure
 
-This project will use **CME futures market data provided through Databento**, as required by the course project guidelines. The primary dataset is expected to be Databento's CME Globex dataset, `GLBX.MDP3`.
+```
+futures_trend_following/
+|- data/                # Cached Databento data (git-ignored)
+|- src/
+|  |- data/             # Databento ingestion, roll handling, return prep
+|  |- signals/          # Trend score calculation
+|  |- strategies/       # Sector-neutral & absolute construction
+|  |- backtest/         # Backtesting engine
+|  |- analysis/         # Metrics & plotting
+|- notebooks/           # Exploratory analysis
+|- results/             # Output tables and charts
+|- tests/               # Unit tests
+|- requirements.txt
+|- .env.example
+|- README.md
+```
 
-The project will focus on futures contracts available through the course's CME data license. The intended futures universe may include contracts across several CME product groups, such as:
+---
 
-- **Equity index futures:** E-mini or Micro E-mini equity index futures
-- **Interest rate futures:** Treasury futures or short-term interest rate futures
-- **Currency futures:** Major FX futures
-- **Energy futures:** Crude oil, natural gas, or refined product futures
-- **Metals futures:** Gold, silver, or copper futures
-- **Agricultural futures:** Grain, oilseed, or livestock futures
+## Setup & Installation
 
-The main price data will likely come from Databento OHLCV data, such as daily or intraday open, high, low, close, and volume records. The project may also use Databento instrument definition data to identify contract symbols, expiration dates, and other contract metadata.
+1. Clone the repository
+   ```bash
+   git clone https://github.com/AJYS-Arc/futures_trend_following.git
+   cd futures_trend_following
+   ```
+2. Create and activate a virtual environment
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate      # macOS/Linux
+   .venv\Scripts\activate         # Windows
+   ```
+3. Install dependencies
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Because individual futures contracts expire, the project will account for contract selection and rolling. Where appropriate, the analysis may use Databento continuous contract symbology or construct continuous futures return series from individual contracts. Since continuous futures prices may not be back-adjusted, the project will handle roll dates carefully when calculating returns.
+---
 
-The analysis will focus on **tradable futures returns**, not underlying spot returns, because the strategies are designed to trade futures contracts. This distinction matters because futures returns can differ from spot returns due to contract expiration, rolling, carry, contango, backwardation, and changes in the futures curve.
+## Databento Configuration
 
-If additional non-Databento data is used, the README will provide clear instructions for obtaining that data. If that additional data is unavailable to other users, the project will include instructions for running the analysis using only the required Databento CME data.
+This project reads CME futures data from Databento's `GLBX.MDP3` dataset and requires a Databento API key.
+
+1. Copy the example env file: `cp .env.example .env`
+2. Add your key to `.env`: `DATABENTO_API_KEY=your_key_here`
+
+The `.env` file is git-ignored and must never be committed.
 
 ---
 
 ## Methodology
 
-The project will use Databento CME futures data to build a repeatable Python analysis for comparing two trend-following strategies.
-
-At a high level, the analysis will follow this workflow:
-
-1. **Define the futures universe:** Select CME futures contracts available through Databento and assign each contract to a sector, such as equity indices, interest rates, currencies, energy, metals, or agriculture.
-
-2. **Prepare futures return data:** Load the relevant CME futures data, calculate returns, and account for contract expiration and rolling where necessary.
-
-3. **Calculate trend signals:** For each futures market, calculate a trend score using historical futures returns and volatility.
-
-4. **Construct the sector-neutral strategy:** Within each sector, rank contracts by trend score, go long the strongest-trending contracts, and short the weakest-trending contracts while keeping sector exposures balanced.
-
-5. **Construct the absolute trend-following strategy:** Evaluate each contract independently, going long contracts with positive trend signals and short contracts with negative trend signals.
-
-6. **Backtest both strategies:** Apply the portfolio construction rules over time and calculate historical portfolio returns.
-
-7. **Compare results:** Evaluate both strategies using return, volatility, Sharpe ratio, maximum drawdown, turnover, and sector exposure metrics.
-
-The methodology is designed to produce a runnable analysis that can be reproduced by users following the instructions in this repository.
+1. Define the futures universe and assign each contract to a sector.
+2. Prepare futures returns, accounting for contract expiration and rolling.
+3. Calculate a trend score per market: **trailing return / trailing volatility**.
+4. Construct the sector-neutral strategy (rank within sector, long strongest / short weakest, balanced).
+5. Construct the absolute strategy (long positive trend / short negative trend, per contract).
+6. Backtest both strategies through one shared engine.
+7. Compare using return, volatility, Sharpe, max drawdown, turnover, and sector exposure.
 
 ---
 
-## Trend Score
+## Project Roadmap
 
-The trend score is the signal used to measure the strength and direction of the price trend for each futures market.
+Work items are tracked as GitHub [Issues](https://github.com/AJYS-Arc/futures_trend_following/issues), in three phases:
 
-The project will calculate trend scores using historical futures returns from Databento CME futures data. A simple starting definition is:
+**Phase 1 - Data Foundation**
+- #2 Define CME futures universe
+- #3 Set up Databento data access
+- #4 Download and prepare futures price data
+- #5 Implement contract roll methodology
 
-**Trend Score = Trailing Futures Return / Trailing Futures Volatility**
+**Phase 2 - Signals & Strategies**
+- #6 Calculate trend scores
+- #7 Implement sector-neutral strategy
+- #8 Implement absolute trend-following strategy
 
-For example, the project may use a trailing futures return divided by trailing volatility, with the exact lookback window selected based on data availability and strategy design. A higher trend score indicates a stronger positive trend, while a lower or negative trend score indicates a weaker or negative trend.
-
-This signal will be used differently in the two strategies:
-
-1. **Sector-neutral strategy:** Contracts will be ranked by trend score within each sector. The strategy will go long the highest-ranked contracts and short the lowest-ranked contracts.
-
-2. **Absolute trend-following strategy:** Each contract will be evaluated independently. The strategy will go long contracts with positive trend scores and short contracts with negative trend scores.
-
-The exact lookback window and volatility calculation may be adjusted during implementation based on data availability and backtesting results.
-
----
-
-## Portfolio Construction
-
-The project will compare two portfolio construction approaches: a **sector-neutral trend-following strategy** and an **absolute trend-following strategy**.
-
-For the **sector-neutral strategy**, futures contracts will first be grouped by sector. Within each sector, contracts will be ranked by trend score. The strategy will go long the contracts with the strongest trend scores and short the contracts with the weakest trend scores. Long and short exposure will be balanced within each sector so that the portfolio is not dominated by one sector.
-
-For the **absolute trend-following strategy**, each futures contract will be evaluated independently. Contracts with positive trend scores will receive long positions, while contracts with negative trend scores will receive short positions. This approach allows sector exposures to change over time depending on where positive and negative trends appear.
-
-Position sizes may be based on simple equal weighting or risk-adjusted weighting. A risk-adjusted approach, such as inverse volatility weighting, may be used to reduce the impact of highly volatile futures contracts on total portfolio returns.
-
-At the portfolio level, the project may also apply sector-level equal weighting or portfolio volatility targeting so that performance comparisons between the two strategies are more consistent and risk-aware.
-
----
-
-## Performance Evaluation
-
-The two strategies will be evaluated at the portfolio level using both return-based and risk-based metrics.
-
-The main performance metrics may include:
-
-- **Cumulative return:** Total growth of the strategy over the backtest period
-- **Annualized return:** Average yearly return of the strategy
-- **Annualized volatility:** Annualized risk based on portfolio return variability
-- **Sharpe ratio:** Risk-adjusted return relative to volatility
-- **Maximum drawdown:** Largest peak-to-trough portfolio decline
-- **Turnover:** Trading activity required to maintain the strategy
-- **Sector exposure:** Allocation across futures sectors over time
-
-The goal of the performance evaluation is not only to determine which strategy had higher returns, but also to understand which strategy produced better risk-adjusted performance, lower drawdowns, and more stable portfolio behavior.
-
----
-
-## Expected Output
-
-The final project will produce a runnable Python analysis that compares sector-neutral and absolute trend-following strategies using CME futures data from Databento.
-
-The expected outputs include:
-
-1. A defined CME futures universe with sector classifications
-2. Databento CME futures price and return data preparation
-3. Trend score calculations for each futures market
-4. A sector-neutral trend-following backtest
-5. An absolute trend-following backtest
-6. Performance comparison tables
-7. Portfolio return and drawdown charts
-8. A written summary explaining which strategy performed better and why
-
-The final repository should allow users to reproduce the analysis using the instructions provided in the README.
+**Phase 3 - Backtest, Metrics & Delivery**
+- #9 Build backtesting engine
+- #10 Calculate performance metrics
+- #11 Generate visualization
+- #12 Write final analysis
+- #13 Update README with final reproduction steps
 
 ---
 
 ## How to Run the Project
 
-This project will be run using Python. The final repository will include code and instructions that allow users to reproduce the analysis.
+The commands below reflect the intended structure; scripts become available as their roadmap issues are completed.
 
-Expected steps:
+1. Set up the environment (see Setup & Installation).
+2. Configure Databento (see Databento Configuration).
+3. Download / cache the data: `python -m src.data.download`
+4. Prepare returns (rolling + continuous series): `python -m src.data.prepare`
+5. Run the backtests (both strategies): `python -m src.backtest.run`
+6. Generate performance tables and charts: `python -m src.analysis.report`
 
-1. Clone the GitHub repository.
-2. Install the required Python packages.
-3. Configure Databento access using the user's Databento API key.
-4. Download or load the required CME futures data.
-5. Run the data preparation scripts.
-6. Run the strategy backtests.
-7. Generate performance tables and charts.
+Outputs are written to `results/`.
 
-More detailed commands will be added as the project code is developed. This section is aspirational at the setup stage and will be updated once the final project structure is complete.
+---
+
+## Contributing
+
+1. Pick an open issue from the Project Roadmap and assign it to yourself.
+2. Create a feature branch: `git checkout -b <short-description>`.
+3. Commit your work and open a pull request against `main`.
+4. Request a review from the Tech Lead before merging.
