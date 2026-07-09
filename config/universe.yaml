@@ -1,0 +1,37 @@
+# CME futures universe (Databento GLBX.MDP3 roots) grouped by sector.
+# multiplier / tick_size are contract specs; adjust as needed for the course license.
+
+equity:
+  - {symbol: ES, name: E-mini S&P 500,    exchange: CME,  multiplier: 50,   tick_size: 0.25,  currency: USD}
+  - {symbol: NQ, name: E-mini Nasdaq-100,  exchange: CME,  multiplier: 20,   tick_size: 0.25,  currency: USD}
+  - {symbol: YM, name: E-mini Dow,         exchange: CBOT, multiplier: 5,    tick_size: 1.0,   currency: USD}
+  - {symbol: RTY, name: E-mini Russell 2000, exchange: CME, multiplier: 50,  tick_size: 0.10,  currency: USD}
+
+rates:
+  - {symbol: ZT, name: 2-Year T-Note,  exchange: CBOT, multiplier: 2000, tick_size: 0.0078125, currency: USD}
+  - {symbol: ZF, name: 5-Year T-Note,  exchange: CBOT, multiplier: 1000, tick_size: 0.0078125, currency: USD}
+  - {symbol: ZN, name: 10-Year T-Note, exchange: CBOT, multiplier: 1000, tick_size: 0.015625,  currency: USD}
+  - {symbol: ZB, name: 30-Year T-Bond, exchange: CBOT, multiplier: 1000, tick_size: 0.03125,   currency: USD}
+
+fx:
+  - {symbol: 6E, name: Euro FX,          exchange: CME, multiplier: 125000, tick_size: 0.00005, currency: USD}
+  - {symbol: 6J, name: Japanese Yen,     exchange: CME, multiplier: 12500000, tick_size: 0.0000005, currency: USD}
+  - {symbol: 6B, name: British Pound,    exchange: CME, multiplier: 62500,  tick_size: 0.0001,  currency: USD}
+  - {symbol: 6C, name: Canadian Dollar,  exchange: CME, multiplier: 100000, tick_size: 0.00005, currency: USD}
+
+energy:
+  - {symbol: CL, name: WTI Crude Oil,    exchange: NYMEX, multiplier: 1000, tick_size: 0.01, currency: USD}
+  - {symbol: NG, name: Natural Gas,      exchange: NYMEX, multiplier: 10000, tick_size: 0.001, currency: USD}
+  - {symbol: HO, name: NY Harbor ULSD,   exchange: NYMEX, multiplier: 42000, tick_size: 0.0001, currency: USD}
+  - {symbol: RB, name: RBOB Gasoline,    exchange: NYMEX, multiplier: 42000, tick_size: 0.0001, currency: USD}
+
+metals:
+  - {symbol: GC, name: Gold,   exchange: COMEX, multiplier: 100,  tick_size: 0.10, currency: USD}
+  - {symbol: SI, name: Silver, exchange: COMEX, multiplier: 5000, tick_size: 0.005, currency: USD}
+  - {symbol: HG, name: Copper, exchange: COMEX, multiplier: 25000, tick_size: 0.0005, currency: USD}
+
+agriculture:
+  - {symbol: ZC, name: Corn,         exchange: CBOT, multiplier: 50, tick_size: 0.25, currency: USD}
+  - {symbol: ZS, name: Soybeans,     exchange: CBOT, multiplier: 50, tick_size: 0.25, currency: USD}
+  - {symbol: ZW, name: Chicago Wheat, exchange: CBOT, multiplier: 50, tick_size: 0.25, currency: USD}
+  - {symbol: LE, name: Live Cattle,  exchange: CME,  multiplier: 400, tick_size: 0.025, currency: USD}
