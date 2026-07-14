@@ -73,7 +73,26 @@ def _prepare_panel(panel: pd.DataFrame) -> pd.DataFrame:
     df["settlement_price"] = pd.to_numeric(df["settlement_price"], errors="coerce")
     df["open_interest"] = pd.to_numeric(df["open_interest"], errors="coerce")
     df["instrument_id"] = pd.to_numeric(df["instrument_id"], errors="coerce")
+    invalid_he_price = (
+    (df["root"] == "HE")
+    & (df["settlement_price"] <= 0)
+    )
 
+    if invalid_he_price.any():
+        print(
+            f"Replacing {invalid_he_price.sum():,} non-positive "
+            "HE settlement prices."
+        )
+        df.loc[invalid_he_price, "settlement_price"] = np.nan
+
+    df = df.sort_values(["instrument_id", "trade_date"])
+    he_prices = (
+        df.loc[df["root"] == "HE"]
+        .groupby("instrument_id")["settlement_price"]
+        .ffill(limit=2)
+    )
+
+    df.loc[df["root"] == "HE", "settlement_price"] = he_prices
     key_cols = [
         "trade_date",
         "root",
@@ -485,7 +504,7 @@ def liquidity_roll_oi(
     *,
     hard_roll_bdays: HardRollInput = DEFAULT_HARD_ROLL_BDAYS,
 ) -> pd.DataFrame:
-    """Run the open-interest rolling method."""
+    """Run the open-interest-only rolling method."""
     if oi_col != "open_interest":
         raise ValueError(
             "This data source supports open-interest rolling only; "
