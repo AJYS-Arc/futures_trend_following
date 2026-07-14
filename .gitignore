@@ -12,3 +12,8 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+
+# Generated trend-signal outputs
+src/signals/trend_scores_*d.parquet
+src/signals/trend_walk_forward_results.csv
+src/signals/trend_walk_forward_summary.csv
