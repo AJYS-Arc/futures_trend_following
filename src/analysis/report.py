@@ -17,8 +17,8 @@ from src.analysis.plots import (
 RESULTS_DIR = Path(__file__).resolve().parent.parent.parent / "results"
 
 
-def main(use_synthetic: bool = True):
-    out = run(use_synthetic=use_synthetic)
+def main(use_synthetic: bool = False):
+    out = run(use_synthetic = use_synthetic)
     results, sectors = out["results"], out["sectors"]
 
     table = comparison_table(results)

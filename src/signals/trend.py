@@ -86,6 +86,32 @@ def _validate_returns(returns: pd.DataFrame) -> pd.DataFrame:
 
     return result.astype(float)
 
+def _rolling_valid_observations(returns: pd.DataFrame, window: int, min_periods: int,
+                                calculation: str, annualization: int = TRADING_DAYS_PER_YEAR,
+                                ddof: int = 1) -> pd.DataFrame:
+    """Calculate rolling statistics using each market's valid observations.
+
+    Missing dates are not converted to zero returns and do not count toward the
+    lookback window. Results are written only on dates when that market has an
+    observed return.
+    """
+    output = pd.DataFrame(index = returns.index, columns = returns.columns, dtype = float)
+
+    for symbol in returns.columns:
+        valid = returns[symbol].dropna()
+
+        if calculation == "return":
+            values = ((1.0 + valid).rolling(window = window, min_periods = min_periods)
+                      .apply(np.prod, raw = True) - 1.0)
+        elif calculation == "volatility":
+            values = (valid.rolling(window = window, min_periods = min_periods).std(ddof = ddof)
+                      * np.sqrt(annualization))
+        else:
+            raise ValueError("calculation must be either 'return' or 'volatility'.")
+
+        output.loc[values.index, symbol] = values
+
+    return output
 
 def build_return_panel(
     rolled_data: pd.DataFrame,
@@ -189,12 +215,14 @@ def trailing_compounded_return(
     if min_periods > lookback:
         raise ValueError("min_periods cannot exceed lookback.")
 
-    return (
-        (1.0 + clean)
-        .rolling(window=lookback, min_periods=min_periods)
-        .apply(np.prod, raw=True)
-        - 1.0
-    )
+    # return (
+    #     (1.0 + clean)
+    #     .rolling(window=lookback, min_periods=min_periods)
+    #     .apply(np.prod, raw=True)
+    #     - 1.0
+    # )
+    return _rolling_valid_observations(returns=clean, window=lookback,
+                                       min_periods=min_periods, calculation="return")
 
 
 def trailing_volatility(
@@ -217,13 +245,9 @@ def trailing_volatility(
     if min_periods > vol_window:
         raise ValueError("min_periods cannot exceed vol_window.")
 
-    return (
-        clean.rolling(
-            window=vol_window,
-            min_periods=min_periods,
-        ).std(ddof=ddof)
-        * np.sqrt(annualization)
-    )
+    return _rolling_valid_observations(returns=clean, window = vol_window,
+                                       min_periods = min_periods, calculation="volatility",
+                                       annualization=annualization, ddof=ddof)
 
 
 def trend_score(

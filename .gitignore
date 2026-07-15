@@ -17,3 +17,5 @@ __pycache__/
 src/signals/trend_scores_*d.parquet
 src/signals/trend_walk_forward_results.csv
 src/signals/trend_walk_forward_summary.csv
+
+.idea/
